@@ -1,0 +1,31 @@
+{
+  "version": "v0.6.1",
+  "base_representation": "IF-v0.3.1",
+  "base_model_path": "models/iforest/v0.3.1/model.joblib",
+  "commissioning_protocol": "v0.5",
+  "commissioning_fraction": 0.2,
+  "persistence_policies": {
+    "warning_alert": {
+      "window_size": 5,
+      "min_anomalies": 3,
+      "label": "Warning / Maintenance Alert Candidate"
+    },
+    "high_severity_alert": {
+      "window_size": 9,
+      "min_anomalies": 5,
+      "label": "High-Severity Alert Candidate"
+    }
+  },
+  "phase_boundaries": {
+    "Phase 1 - Stable": "rolling_median_z < 1.5 and persistent_alarm == 0",
+    "Phase 2 - Transition": "1.5 <= rolling_median_z < 3.0 and persistent_alarm == 0",
+    "Phase 3 - Escalating Anomaly": "3.0 <= rolling_median_z < 6.0 or persistent_alarm == 1",
+    "Phase 4 - Severe": "rolling_median_z >= 6.0"
+  },
+  "confidence_policy": {
+    "calibrated": false,
+    "export_value": null,
+    "method": "NOT_CALIBRATED"
+  },
+  "status": "EVIDENCE PIPELINE CORRECTION \u2014 NOT PRODUCTION VALIDATED"
+}

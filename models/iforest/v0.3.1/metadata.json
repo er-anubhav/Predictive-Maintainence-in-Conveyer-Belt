@@ -1,0 +1,8 @@
+{
+  "model_name": "IF-v0.3.1-research",
+  "trained_date": "2026-09-22 14:04:59 UTC",
+  "training_data": "CWRU Normal (97, 98) + Paderborn K001 (50 runs)",
+  "training_samples": 13170,
+  "model_type": "Isolation Forest (n_estimators=200, contamination=0.03)",
+  "status": "LEAKAGE-CORRECTED RESEARCH MODEL (NOT PRODUCTION CERTIFIED)"
+}

@@ -1,0 +1,23 @@
+{
+  "model_type": "IsolationForest",
+  "version": "v0.1",
+  "created_at": "2026-09-22T11:01:46.802477+00:00",
+  "hyperparameters": {
+    "n_estimators": 100,
+    "contamination": 0.05,
+    "random_state": 42,
+    "watch_threshold": 0.55,
+    "anomaly_threshold": 0.7
+  },
+  "states": [
+    "NORMAL",
+    "WATCH",
+    "ANOMALOUS"
+  ],
+  "disclaimer": "Scores represent statistical distance/anomaly score, NOT failure probability or RUL.",
+  "experiment_id": "exp_001_cwru_iforest_baseline",
+  "trained_on": "CWRU Bearing Data Center baseline",
+  "eval_f1": 0.9888,
+  "eval_precision": 0.9778,
+  "eval_recall": 1.0
+}

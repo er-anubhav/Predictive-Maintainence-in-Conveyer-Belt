@@ -1,0 +1,84 @@
+{
+  "datasets": {
+    "cwru": {
+      "name": "Case Western Reserve University (CWRU) Bearing Data Center",
+      "official_source": "Case Western Reserve University Bearing Data Center",
+      "url": "https://engineering.case.edu/bearingdatacenter",
+      "mirror_url": "https://raw.githubusercontent.com/AnubhavTripathi/cwru-dataset-mirror/master or CWRU direct HTTP",
+      "dataset_version": "12k Drive End / 48k Drive End / Normal Baseline",
+      "sampling_rate_hz": 12000,
+      "channels": ["DE_time", "FE_time", "BA_time", "RPM"],
+      "operating_conditions": {
+        "motor_loads_hp": [0, 1, 2, 3],
+        "speeds_rpm": [1797, 1772, 1750, 1730],
+        "fault_diameters_mils": [7, 14, 21, 28]
+      },
+      "labels": {
+        "NORMAL": ["97.mat", "98.mat", "99.mat", "100.mat"],
+        "INNER_RACE": ["105.mat", "106.mat", "107.mat", "108.mat"],
+        "BALL": ["118.mat", "119.mat", "120.mat", "121.mat"],
+        "OUTER_RACE": ["130.mat", "131.mat", "132.mat", "133.mat"]
+      },
+      "license": "Public Domain / Open Academic Research Use",
+      "usage_restrictions": "Cite CWRU Bearing Data Center in scientific publications."
+    },
+    "paderborn": {
+      "name": "Paderborn University Bearing Dataset (KAt-Datacenter)",
+      "official_source": "Chair of Design and Drive Technology, Paderborn University, Germany",
+      "url": "https://mb.uni-paderborn.de/kat/forschung/datacenter/bearing-datacenter",
+      "dataset_version": "2016-Release-1.0",
+      "sampling_rate_hz": 64000,
+      "channels": ["vibration", "motor_current_phase1", "motor_current_phase2", "speed", "torque", "temperature"],
+      "operating_conditions": {
+        "rotational_speed_rpm": [900, 1500],
+        "load_torque_nm": [0.1, 0.7],
+        "radial_force_n": [400, 1000]
+      },
+      "labels": {
+        "K001_K006": "Undamaged (Healthy Baseline)",
+        "KA01_KA09": "Accelerated Life Testing Damage (Inner/Outer Race)",
+        "KI01_KI08": "Artificial Electric Discharge Damage"
+      },
+      "license": "CC BY-NC 4.0",
+      "usage_restrictions": "Non-commercial scientific research. Mandatory citation of Lessmeier et al."
+    },
+    "nasa_ims": {
+      "name": "NASA Intelligent Maintenance Systems (IMS) Bearing Dataset",
+      "official_source": "Center for Intelligent Maintenance Systems (IMS), University of Cincinnati / NASA Prognostics Data Repository",
+      "url": "https://www.nasa.gov/intelligent-systems-division/discovery-and-systems-health/pcoe/pcoe-data-set-repository/",
+      "dataset_version": "IMS Run-to-Failure Run 1, 2, 3",
+      "sampling_rate_hz": 20000,
+      "channels": ["Bearing 1 (X, Y)", "Bearing 2 (X, Y)", "Bearing 3 (X, Y)", "Bearing 4 (X, Y)"],
+      "operating_conditions": {
+        "speed_rpm": 2000,
+        "radial_load_lbs": 6000
+      },
+      "labels": {
+        "Run 1": "Bearing 3 Inner Race failure, Bearing 4 Roller element failure",
+        "Run 2": "Bearing 1 Outer Race failure (day 7 to 8)",
+        "Run 3": "Bearing 3 Outer Race failure"
+      },
+      "license": "Public Domain (NASA Open Innovation)",
+      "usage_restrictions": "Open research use. Credit NASA Prognostics Center of Excellence."
+    },
+    "mimii": {
+      "name": "MIMII Dataset (Malfunctioning Industrial Machine Investigation and Inspection)",
+      "official_source": "Hitachi, Ltd. / DCASE Challenge 2020 Task 2",
+      "url": "https://zenodo.org/record/3384388",
+      "subset": "Targeted Pump and Fan Bearing Acoustics (NOT complete 50GB release)",
+      "dataset_version": "MIMII Release 1.0",
+      "sampling_rate_hz": 16000,
+      "channels": ["8-channel microphone array (Mic 1-8)"],
+      "operating_conditions": {
+        "snr_levels_db": [-6, 0, 6],
+        "machine_models": ["pump_model_00", "fan_model_00"]
+      },
+      "labels": {
+        "normal": "Continuous steady operational sound with industrial background factory noise",
+        "abnormal": "Bearing friction, unbalance, seal damage, cavitation"
+      },
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "usage_restrictions": "Targeted bearing acoustic subsets only. Credit Purohit et al. / Hitachi."
+    }
+  }
+}

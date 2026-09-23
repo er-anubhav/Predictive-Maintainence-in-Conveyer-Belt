@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SIH26008_POC_Thresholds",
+  "description": "POC Demonstration Thresholds Schema — Field Calibration Required — Not Safety Limits",
+  "type": "object",
+  "required": ["version", "temperature", "tracking", "operating_context", "camera", "fusion"],
+  "properties": {
+    "version": { "type": "string" },
+    "environment": { "type": "string" },
+    "temperature": {
+      "type": "object",
+      "required": [
+        "normal_max_c",
+        "watch_max_c",
+        "warning_max_c",
+        "rate_of_rise_watch_c_per_min",
+        "rate_of_rise_warning_c_per_min"
+      ],
+      "properties": {
+        "normal_max_c": { "type": "number" },
+        "watch_max_c": { "type": "number" },
+        "warning_max_c": { "type": "number" },
+        "rate_of_rise_watch_c_per_min": { "type": "number" },
+        "rate_of_rise_warning_c_per_min": { "type": "number" },
+        "persistence_windows": { "type": "integer" },
+        "sensor_min_valid_c": { "type": "number" },
+        "sensor_max_valid_c": { "type": "number" }
+      }
+    },
+    "tracking": {
+      "type": "object",
+      "required": [
+        "normal_max_abs_mm",
+        "watch_max_abs_mm",
+        "warning_max_abs_mm"
+      ],
+      "properties": {
+        "normal_max_abs_mm": { "type": "number" },
+        "watch_max_abs_mm": { "type": "number" },
+        "warning_max_abs_mm": { "type": "number" },
+        "persistence_windows": { "type": "integer" },
+        "sensor_min_valid_mm": { "type": "number" },
+        "sensor_max_valid_mm": { "type": "number" }
+      }
+    },
+    "operating_context": {
+      "type": "object",
+      "required": [
+        "stopped_speed_mps",
+        "startup_speed_threshold_mps",
+        "nominal_speed_mps",
+        "idle_load_percent",
+        "loaded_load_percent"
+      ],
+      "properties": {
+        "stopped_speed_mps": { "type": "number" },
+        "startup_speed_threshold_mps": { "type": "number" },
+        "nominal_speed_mps": { "type": "number" },
+        "idle_load_percent": { "type": "number" },
+        "loaded_load_percent": { "type": "number" },
+        "overload_percent": { "type": "number" },
+        "speed_trend_window_size": { "type": "integer" }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": [
+        "max_evidence_age_seconds",
+        "storage_directory"
+      ],
+      "properties": {
+        "max_evidence_age_seconds": { "type": "number" },
+        "roi_misalignment_watch_px": { "type": "number" },
+        "roi_misalignment_warning_px": { "type": "number" },
+        "visual_anomaly_watch_score": { "type": "number" },
+        "visual_anomaly_warning_score": { "type": "number" },
+        "storage_directory": { "type": "string" }
+      }
+    },
+    "fusion": {
+      "type": "object",
+      "required": [
+        "vibration_watch_threshold",
+        "require_persistent_vibration_for_warning",
+        "freshness_window_seconds"
+      ],
+      "properties": {
+        "vibration_watch_threshold": { "type": "number" },
+        "require_persistent_vibration_for_warning": { "type": "boolean" },
+        "freshness_window_seconds": { "type": "number" }
+      }
+    }
+  }
+}

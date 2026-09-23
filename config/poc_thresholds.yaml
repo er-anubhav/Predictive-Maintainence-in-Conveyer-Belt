@@ -1,0 +1,57 @@
+# ==============================================================================
+# SIH 26008 — POC Demonstration Threshold Configuration
+# ==============================================================================
+# NOTICE:
+# POC DEMONSTRATION THRESHOLDS ONLY
+# FIELD CALIBRATION REQUIRED
+# NOT VALIDATED MINING SAFETY LIMITS
+# ==============================================================================
+
+version: "1.0.0"
+environment: "poc-demonstration"
+
+temperature:
+  normal_max_c: 55.0
+  watch_max_c: 65.0
+  warning_max_c: 80.0
+  rate_of_rise_watch_c_per_min: 1.0
+  rate_of_rise_warning_c_per_min: 2.0
+  persistence_windows: 3
+  sensor_min_valid_c: -20.0
+  sensor_max_valid_c: 150.0
+
+tracking:
+  normal_max_abs_mm: 5.0
+  watch_max_abs_mm: 12.0
+  warning_max_abs_mm: 20.0
+  persistence_windows: 3
+  sensor_min_valid_mm: -50.0
+  sensor_max_valid_mm: 50.0
+
+operating_context:
+  stopped_speed_mps: 0.1
+  startup_speed_threshold_mps: 2.0
+  nominal_speed_mps: 2.80
+  idle_load_percent: 15.0
+  loaded_load_percent: 40.0
+  overload_percent: 90.0
+  speed_trend_window_size: 5
+  pulley_diameter_meters: 0.50
+  pulley_encoder_pulses_per_rev: 60
+
+camera:
+  source: "0"  # Use "0" for physical /dev/video0 USB camera, or "demo" for synthetic
+  video_device: "/dev/video0"
+  max_evidence_age_seconds: 5.0
+  camera_reconnect_retry_seconds: 3.0
+  roi_misalignment_watch_px: 15.0
+  roi_misalignment_warning_px: 30.0
+  visual_anomaly_watch_score: 0.45
+  visual_anomaly_warning_score: 0.70
+  storage_directory: "data/evidence/camera"
+
+fusion:
+  vibration_watch_threshold: 3.0
+  require_persistent_vibration_for_warning: true
+  freshness_window_seconds: 10.0
+

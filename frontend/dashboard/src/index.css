@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/*
+ * Design system — "Bold playful flat color / Neo-Brutalist"
+ * Modeled after @er-anubhav/adaptive-vr (VR-Dashboard):
+ * Cream canvas, solid ink outlines, hard offset shadows, saturated pastel sensor colors.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-coral: var(--coral);
+  --color-sky: var(--sky);
+  --color-lime: var(--lime);
+  --color-mint: var(--mint);
+  --color-magenta: var(--magenta);
+  --color-amber: var(--amber);
+  --font-grotesk: Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+:root {
+  --radius: 1.25rem;
+  --cream: #ffffff;
+  --ink: oklch(0.184 0.005 67.5);
+  --coral: oklch(0.671 0.217 30.7);
+  --sky: oklch(0.602 0.217 259.5);
+  --lime: oklch(0.9 0.191 123.3);
+  --mint: oklch(0.736 0.131 177);
+  --magenta: oklch(0.665 0.248 358.1);
+  --amber: oklch(0.849 0.148 80.7);
+  --background: #ffffff;
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: #ffffff;
+  --secondary: var(--lime);
+  --secondary-foreground: var(--ink);
+  --muted: #f4f4f5;
+  --muted-foreground: oklch(0.45 0.012 67.5);
+  --accent: var(--lime);
+  --accent-foreground: var(--ink);
+  --destructive: var(--coral);
+  --destructive-foreground: #ffffff;
+  --border: var(--ink);
+  --input: var(--ink);
+  --ring: var(--sky);
+}
+
+@utility hard-shadow {
+  box-shadow: 10px 10px 0 var(--ink);
+}
+
+@utility hard-shadow-sm {
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+@utility hard-shadow-xs {
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+@layer base {
+  html {
+    font-size: 17px;
+  }
+
+  *, ::before, ::after {
+    border-color: var(--color-border);
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6, p, span, div, button, input, select, textarea, label, strong, b, a, table, th, td {
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+  }
+}
+
+/* Custom Neo-brutalist scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3834;
+}
+
+/* Metrics font utility */
+.font-mono-num {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}

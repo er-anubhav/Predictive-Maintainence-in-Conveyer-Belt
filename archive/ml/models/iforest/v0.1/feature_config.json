@@ -1,0 +1,22 @@
+{
+  "feature_version": "v1.0.0",
+  "feature_columns": [
+    "rms",
+    "peak",
+    "crest_factor",
+    "kurtosis",
+    "dominant_frequency_hz",
+    "spectral_energy"
+  ],
+  "required_fields": [
+    "rms",
+    "peak",
+    "crest_factor",
+    "kurtosis"
+  ],
+  "optional_fields": [
+    "dominant_frequency_hz",
+    "spectral_energy"
+  ],
+  "imputation": "zero"
+}

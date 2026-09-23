@@ -1,0 +1,36 @@
+{
+  "features": {
+    "rms": {
+      "mean": 0.21262212268905262,
+      "std": 0.11639387139252637
+    },
+    "peak": {
+      "mean": 0.9279348434889991,
+      "std": 0.5166866192526444
+    },
+    "crest_factor": {
+      "mean": 4.395442662426792,
+      "std": 0.8007506177210149
+    },
+    "kurtosis": {
+      "mean": 4.998440970317483,
+      "std": 1.7129159835159284
+    },
+    "dominant_frequency_hz": {
+      "mean": 769.4356613515566,
+      "std": 1275.0666493272565
+    },
+    "spectral_energy": {
+      "mean": 62.03460136124726,
+      "std": 101.88780854631614
+    }
+  },
+  "features_list": [
+    "rms",
+    "peak",
+    "crest_factor",
+    "kurtosis",
+    "dominant_frequency_hz",
+    "spectral_energy"
+  ]
+}

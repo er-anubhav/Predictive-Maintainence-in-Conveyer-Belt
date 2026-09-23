@@ -1,0 +1,41 @@
+{
+  "experiment_id": "exp_001_cwru_iforest_baseline",
+  "dataset": "cwru",
+  "dataset_version": "12k_drive_end_baseline",
+  "feature_version": "v1.0.0",
+  "processing_version": "zero_phase_sos_butterworth",
+  "model_type": "IsolationForest",
+  "hyperparameters": {
+    "n_estimators": 100,
+    "contamination": 0.05,
+    "random_state": 42,
+    "watch_threshold": 0.55,
+    "anomaly_threshold": 0.7
+  },
+  "random_seed": 42,
+  "train_samples": 16,
+  "validation_samples": 0,
+  "test_samples": 50,
+  "metrics": {
+    "evaluation_domain": "PUBLIC DATASET VALIDATION (CWRU)",
+    "samples_evaluated": 50,
+    "precision": 0.9778,
+    "recall": 1.0,
+    "f1_score": 0.9888,
+    "false_positive_rate": 0.1667,
+    "confusion_matrix": {
+      "true_positives": 44,
+      "false_positives": 1,
+      "true_negatives": 5,
+      "false_negatives": 0
+    },
+    "score_distribution": {
+      "mean": 0.6245,
+      "std": 0.0569,
+      "min": 0.4288,
+      "max": 0.644
+    }
+  },
+  "notes": "Milestone 4 initial anomaly detection model validated on CWRU baseline vs impact faults.",
+  "timestamp": "2026-09-22T11:01:46.777592+00:00"
+}

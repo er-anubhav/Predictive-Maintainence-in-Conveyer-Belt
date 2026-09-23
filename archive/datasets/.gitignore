@@ -1,0 +1,8 @@
+# Ignore generated raw and processed binary datasets
+raw/vibration/*.npz
+raw/acoustic/*.npz
+processed/features/*.npz
+processed/features/*.parquet
+*.parquet
+*.npz
+!.gitkeep
