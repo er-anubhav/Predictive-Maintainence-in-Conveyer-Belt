@@ -4,8 +4,13 @@
 
 #if __has_include("secrets.h")
 #include "secrets.h"
-#else
+#endif
+
+#ifndef WIFI_SSID
 #define WIFI_SSID ""
+#endif
+
+#ifndef WIFI_PASSWORD
 #define WIFI_PASSWORD ""
 #endif
 
@@ -13,10 +18,22 @@
 #define NTP_SYNC_TIMEOUT_MS 5000
 #define WIFI_RETRY_INTERVAL_MS 10000
 
-#define GATEWAY_HOST "192.168.1.100"
+#ifndef GATEWAY_HOST
+#define GATEWAY_HOST "10.255.80.71"
+#endif
+
+#ifndef GATEWAY_PORT
 #define GATEWAY_PORT 9000
+#endif
+
+#ifndef GATEWAY_INGEST_PATH
 #define GATEWAY_INGEST_PATH "/ingest"
+#endif
 #define HTTP_TIMEOUT_MS 3000
+
+#define AP_SSID_NAME "SIH26008-Setup"
+#define AP_PASSWORD ""
+#define PROVISIONING_NAMESPACE "sih_wifi"
 
 #define NODE_ID "NODE-001"
 #define CONVEYOR_ID "Conveyor-01"

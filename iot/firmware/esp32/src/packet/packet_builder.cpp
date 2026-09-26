@@ -15,7 +15,10 @@ bool PacketBuilder::begin() {
         return false;
     }
 
-    sequence = preferences.getULong("next_seq", 1000UL);
+    sequence = preferences.getULong("next_seq", 1000000UL);
+    if (sequence < 1000000UL) {
+        sequence = 1000000UL;
+    }
     reservedUntil = sequence + SEQUENCE_BLOCK_SIZE - 1;
     preferences.putULong("next_seq", reservedUntil + 1);
     ready = true;

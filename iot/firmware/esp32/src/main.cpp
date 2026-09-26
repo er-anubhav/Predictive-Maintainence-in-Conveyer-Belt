@@ -73,12 +73,20 @@ void setup() {
                   sensorsOk ? "PASS" : "PARTIAL / CHECK SOURCES");
 
     packetBuilder.begin();
-    network.connectWiFi();
+    network.begin();
 
-    Serial.println("[READY] Sampling loop started.");
+    Serial.println("[READY] Initialization complete.");
 }
 
 void loop() {
+    if (network.isProvisioning()) {
+        network.handlePortal();
+        delay(10);
+        return;
+    }
+
+    network.maintainConnection();
+
     const unsigned long now = millis();
     if (now - lastTelemetryMs < TELEMETRY_INTERVAL_MS) {
         delay(5);
