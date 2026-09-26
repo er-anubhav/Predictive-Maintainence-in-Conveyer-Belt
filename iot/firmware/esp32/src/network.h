@@ -2,20 +2,20 @@
 #include <Arduino.h>
 
 class NetworkManager {
+public:
+    NetworkManager(const char* ssid, const char* password,
+                   const char* host, int port, const char* path);
+    bool connectWiFi();
+    bool maintainConnection();
+    bool isConnected() const;
+    int wifiRssi() const;
+    int sendTelemetryToGateway(const String& jsonPayload);
+
 private:
     const char* ssid;
     const char* password;
     const char* gatewayHost;
     int gatewayPort;
     const char* ingestPath;
-
-public:
-    NetworkManager(const char* s, const char* p, const char* gHost, int gPort, const char* path);
-
-    bool connectWiFi();
-    bool isConnected();
-
-    // Sends serialized telemetry JSON to Gateway /ingest endpoint
-    // Returns HTTP status code (e.g. 202, 200) or negative on error
-    int sendTelemetryToGateway(const String& jsonPayload);
+    unsigned long lastReconnectAttempt = 0;
 };

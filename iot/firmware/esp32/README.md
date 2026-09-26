@@ -1,94 +1,99 @@
 # ESP32 Edge Sensor Node Firmware — SIH 26008
 
-## Overview
+The ESP32 node samples conveyor-condition sensors, computes vibration features locally, and sends canonical v1.0 JSON to the local Edge Gateway at `/ingest`.
 
-This module houses the embedded firmware for the distributed IoT monitoring nodes positioned along mining conveyor systems. Built on the ESP32 microcontroller platform using the Arduino/FreeRTOS framework and PlatformIO.
+## Current hardware-oriented sources
 
----
+| Modality | Firmware source | Default |
+|---|---|---|
+| Vibration | ADXL345 over I2C or simulated fixture | SIMULATED |
+| Temperature | MLX90614 over I2C or simulated fixture | SIMULATED |
+| RPM / belt speed | GPIO pulse input or simulated RPM | REAL_HARDWARE |
+| Load | Analog torque/current proxy or simulated load | REAL_HARDWARE |
+| Tracking | Digital IR edge proxy or simulated deviation | REAL_HARDWARE |
+| Acoustic | Existing HAL retained for schema compatibility | SIMULATED |
 
-## Architecture
+The project deliberately reports per-sensor source labels as `REAL_HARDWARE`, `SIMULATED`, or `UNAVAILABLE`. This avoids presenting development mocks as field measurements.
 
-```
-┌────────────────────────────────────────────────────────┐
-│                   ESP32 Sensor Node                    │
-│                                                        │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │         Sensor Hardware Abstraction Layer         │  │
-│  │   [Vibration]  [Acoustic]  [Temp]  [Speed] [Load]│  │
-│  └──────────────────────────┬───────────────────────┘  │
-│                             │                          │
-│                             ▼                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │     Packet Builder (Monotonic Sequence Counter)  │  │
-│  │     Canonical Telemetry JSON (v1.0)              │  │
-│  └──────────────────────────┬───────────────────────┘  │
-│                             │                          │
-│                             ▼                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │          Network Manager (HTTP POST)             │  │
-│  └──────────────────────────┬───────────────────────┘  │
-└─────────────────────────────┼──────────────────────────┘
-                              │ Local WiFi / RS-485
-                              ▼
-                 ┌─────────────────────────┐
-                 │    Edge Gateway Agent   │
-                 │      (POST /ingest)     │
-                 └─────────────────────────┘
-```
+## Default ESP32 pins
 
----
+- I2C SDA: GPIO 21
+- I2C SCL: GPIO 22
+- RPM pulse input: GPIO 18
+- Load analog proxy: GPIO 34
+- Tracking digital input: GPIO 27
+- ADXL345 default address: `0x53`
+- MLX90614 default address: `0x5A`
 
-## Key Design Principles
+Verify the actual sensor wiring, electrical levels, calibration and mechanical mounting before field deployment.
 
-1. **Decoupled from Central Infrastructure**:
-   The ESP32 communicates exclusively with the local **Edge Gateway** (`POST http://gateway-ip:9000/ingest`). It has zero dependencies on PostgreSQL, internet uplinks, or cloud endpoints.
-2. **Sensor Hardware Abstraction Layer (HAL)**:
-   Clear C++ interfaces (`VibrationSensor`, `TemperatureSensor`, etc.) allow rapid switching from development mocks to physical industrial sensors (ADXL355, MLX90614, piezoelectric pickups) without rewriting sampling or networking logic.
-3. **Monotonic Sequence Numbering**:
-   Every transmission increments a 32-bit sequence counter (`sequence`). The combination of `(node_id, sequence)` uniquely identifies each telemetry frame, preventing duplicates during intermittent wireless link retransmissions.
-4. **Resilient Autonomous Operation**:
-   If the local gateway or WiFi drops, the ESP32 continues its operational loop and retry cadence without blocking or memory leakage.
-
----
-
-## Source Tree
+## Telemetry path
 
 ```
-iot/firmware/esp32/
-├── platformio.ini               # PlatformIO board & dependency manifest
-├── src/
-│   ├── config.h                 # WiFi credentials, gateway endpoint, node ID
-│   ├── network.h / .cpp         # WiFi lifecycle & HTTP client
-│   ├── telemetry.h / .cpp       # Multi-sensor coordinator
-│   ├── sensors/
-│   │   ├── vibration_sensor.h   # Tri-axial vibration HAL & Mock
-│   │   ├── temperature_sensor.h # Infrared/contact temperature HAL & Mock
-│   │   ├── acoustic_sensor.h    # High-frequency acoustic emission HAL & Mock
-│   │   ├── speed_sensor.h       # Proximity belt speed HAL & Mock
-│   │   ├── load_sensor.h        # Weightometer load HAL & Mock
-│   │   └── tracking_sensor.h    # Lateral belt tracking HAL & Mock
-│   ├── packet/
-│   │   ├── packet_builder.h     # Packet builder definition
-│   │   └── packet_builder.cpp   # Canonical v1.0 JSON serializer
-│   └── main.cpp                 # Main setup and loop routines
-└── README.md
+Sensor drivers
+    ↓
+TelemetryCollector
+    ↓
+PacketBuilder
+    ↓
+WiFi / HTTP
+    ↓
+Edge Gateway POST /ingest
+    ↓
+FastAPI telemetry service
+    ↓
+Frozen ML + commissioning + persistence layers
 ```
 
----
+Raw vibration samples are transmitted in `raw_samples` with `sample_rate_hz` so the existing backend inference engine can extract the frozen Standard-6 feature representation.
 
-## Building and Flashing
+The packet also includes:
 
-### Using PlatformIO CLI
+- `sequence` with NVS-backed reserved blocks to avoid reuse after reboot
+- NTP-derived UTC timestamp when available
+- `timestamp_source`
+- `sensor_sources`
+- `device_health` with WiFi RSSI, uptime, heap and firmware version
+- vibration features for observability
+
+## Credentials
+
+Create:
+
+```
+iot/firmware/esp32/src/secrets.h
+```
+
+from:
+
+```
+iot/firmware/esp32/src/secrets.h.example
+```
+
+`secrets.h` is gitignored.
+
+## Build and flash
 
 ```bash
 cd iot/firmware/esp32
 
-# Compile the firmware
 pio run
-
-# Flash to connected ESP32 via USB
 pio run --target upload
-
-# Open Serial Monitor (115200 baud)
 pio device monitor
 ```
+
+Serial monitor: **115200 baud**.
+
+## Switching to physical vibration
+
+In `src/config.h`:
+
+```cpp
+#define VIBRATION_SOURCE 1
+```
+
+Then verify the ADXL345 is detected at the configured I2C address. Do not describe the resulting telemetry as validated industrial measurements until the sensor is physically installed, calibrated and tested against the actual conveyor/machine.
+
+## Notes
+
+The current load and tracking implementations are deliberately simple POC interfaces. They provide hardware data paths, not industrial calibration. The frozen ML benchmark/model lineage is not retrained or modified by this firmware work.

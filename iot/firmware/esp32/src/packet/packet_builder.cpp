@@ -1,45 +1,109 @@
 #include "packet_builder.h"
 #include "../config.h"
+#include <time.h>
+#include <math.h>
 
-PacketBuilder::PacketBuilder(const char* nId, const char* cId, uint32_t initialSequence)
-    : nodeId(nId), conveyorId(cId), sequence(initialSequence) {}
+PacketBuilder::PacketBuilder(const char* id, const char* conv)
+    : nodeId(id), conveyorId(conv) {}
 
-String PacketBuilder::buildTelemetryPacket(const SensorReadings& readings, const char* isoTimestamp) {
-    sequence++;
+bool PacketBuilder::begin() {
+    if (!preferences.begin(SEQUENCE_NAMESPACE, false)) {
+        Serial.println("[SEQ] NVS unavailable; using volatile sequence.");
+        sequence = 1000;
+        reservedUntil = 0;
+        ready = false;
+        return false;
+    }
+
+    sequence = preferences.getULong("next_seq", 1000UL);
+    reservedUntil = sequence + SEQUENCE_BLOCK_SIZE - 1;
+    preferences.putULong("next_seq", reservedUntil + 1);
+    ready = true;
+
+    Serial.printf("[SEQ] Reserved block %lu-%lu.\n",
+                  static_cast<unsigned long>(sequence),
+                  static_cast<unsigned long>(reservedUntil));
+    return true;
+}
+
+void PacketBuilder::reserveSequenceBlock() {
+    sequence = preferences.getULong("next_seq", reservedUntil + 1);
+    reservedUntil = sequence + SEQUENCE_BLOCK_SIZE - 1;
+    preferences.putULong("next_seq", reservedUntil + 1);
+}
+
+String PacketBuilder::buildTelemetryPacket(
+    const SensorReadings& readings,
+    int wifiRssi,
+    bool wifiConnected
+) {
+    if (ready && sequence >= reservedUntil) reserveSequenceBlock();
+    ++sequence;
+
+    const time_t now = time(nullptr);
+    const bool synced = now >= 1700000000;
+
+    char timestamp[32];
+    if (synced) {
+        struct tm utc;
+        gmtime_r(&now, &utc);
+        strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%SZ", &utc);
+    } else {
+        strcpy(timestamp, "1970-01-01T00:00:00Z");
+    }
 
     JsonDocument doc;
-
     doc["schema_version"] = SCHEMA_VERSION;
     doc["node_id"] = nodeId;
     doc["conveyor_id"] = conveyorId;
-
-    if (isoTimestamp && strlen(isoTimestamp) > 0) {
-        doc["timestamp"] = isoTimestamp;
-    } else {
-        // Fallback epoch representation or uptime marker
-        char timeBuf[32];
-        unsigned long sec = millis() / 1000;
-        snprintf(timeBuf, sizeof(timeBuf), "2026-09-21T%02lu:%02lu:%02luZ", (sec / 3600) % 24, (sec / 60) % 60, sec % 60);
-        doc["timestamp"] = timeBuf;
-    }
-
+    doc["timestamp"] = timestamp;
+    doc["timestamp_source"] = synced ? "NTP" : "UNSYNCED";
     doc["sequence"] = sequence;
 
-    // Vibration block
     JsonObject vib = doc["vibration"].to<JsonObject>();
-    vib["rms"] = round(readings.vibRms * 1000.0) / 1000.0;
-    vib["peak"] = round(readings.vibPeak * 100.0) / 100.0;
-    vib["kurtosis"] = round(readings.vibKurtosis * 100.0) / 100.0;
+    if (readings.vibration.valid) {
+        vib["rms"] = readings.vibration.rms;
+        vib["peak"] = readings.vibration.peak;
+        vib["kurtosis"] = readings.vibration.kurtosis;
+        vib["crest_factor"] = readings.vibration.crestFactor;
+        vib["dominant_frequency_hz"] = readings.vibration.dominantFrequencyHz;
+        vib["spectral_energy"] = readings.vibration.spectralEnergy;
+        vib["sample_rate_hz"] = VIBRATION_SAMPLE_RATE_HZ;
+    } else {
+        vib["quality"] = "UNAVAILABLE";
+    }
 
-    // Acoustic block
-    JsonObject acoustic = doc["acoustic"].to<JsonObject>();
-    acoustic["rms"] = round(readings.acousticRms * 1000.0) / 1000.0;
+#if TRANSMIT_RAW_VIBRATION
+    JsonArray raw = doc["raw_samples"].to<JsonArray>();
+    const size_t count = min(readings.vibration.count,
+                             static_cast<size_t>(MAX_RAW_VIBRATION_SAMPLES));
+    for (size_t i = 0; i < count; ++i) raw.add(readings.vibration.samples[i]);
+    doc["sample_rate_hz"] = VIBRATION_SAMPLE_RATE_HZ;
+#endif
 
-    // Direct metrics
-    doc["temperature"] = round(readings.temperature * 10.0) / 10.0;
-    doc["belt_speed"] = round(readings.beltSpeed * 100.0) / 100.0;
-    doc["load"] = round(readings.load * 10.0) / 10.0;
-    doc["tracking_position"] = round(readings.trackingPosition * 10.0) / 10.0;
+    if (isfinite(readings.acousticRms)) doc["acoustic_rms"] = readings.acousticRms;
+    if (isfinite(readings.temperature)) doc["temperature"] = readings.temperature;
+    if (isfinite(readings.rpm)) doc["rpm"] = readings.rpm;
+    doc["pulse_count"] = readings.pulseCount;
+    if (isfinite(readings.beltSpeed)) doc["belt_speed"] = readings.beltSpeed;
+    if (isfinite(readings.load)) doc["load"] = readings.load;
+    if (isfinite(readings.trackingPosition)) doc["tracking_position"] = readings.trackingPosition;
+
+    doc["source"] = readings.vibrationSource;
+
+    JsonObject sources = doc["sensor_sources"].to<JsonObject>();
+    sources["vibration"] = readings.vibrationSource;
+    sources["temperature"] = readings.temperatureSource;
+    sources["rpm"] = readings.rpmSource;
+    sources["load"] = readings.loadSource;
+    sources["tracking"] = readings.trackingSource;
+
+    JsonObject health = doc["device_health"].to<JsonObject>();
+    health["wifi_rssi"] = wifiRssi;
+    health["wifi_connected"] = wifiConnected;
+    health["uptime_ms"] = millis();
+    health["free_heap"] = ESP.getFreeHeap();
+    health["firmware_version"] = FIRMWARE_VERSION;
 
     String output;
     serializeJson(doc, output);

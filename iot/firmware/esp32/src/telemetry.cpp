@@ -25,18 +25,33 @@ SensorReadings TelemetryCollector::sampleAll() {
     SensorReadings readings;
 
     if (vibSensor) {
-        readings.vibRms = vibSensor->readRms();
-        readings.vibPeak = vibSensor->readPeak();
-        readings.vibKurtosis = vibSensor->readKurtosis();
-    } else {
-        readings.vibRms = 0.0f; readings.vibPeak = 0.0f; readings.vibKurtosis = 3.0f;
+        readings.vibration.valid = vibSensor->captureWindow(readings.vibration);
+        readings.vibrationSource = vibSensor->source();
     }
 
-    readings.acousticRms = acousticSensor ? acousticSensor->readAcousticRms() : 0.0f;
-    readings.temperature = tempSensor ? tempSensor->readTemperature() : 25.0f;
-    readings.beltSpeed = speedSensor ? speedSensor->readSpeed() : 0.0f;
-    readings.load = loadSensor ? loadSensor->readLoad() : 0.0f;
-    readings.trackingPosition = trackingSensor ? trackingSensor->readTrackingDeviation() : 0.0f;
+    if (acousticSensor) readings.acousticRms = acousticSensor->readAcousticRms();
+
+    if (tempSensor) {
+        readings.temperature = tempSensor->readTemperature();
+        readings.temperatureSource = tempSensor->source();
+    }
+
+    if (speedSensor) {
+        readings.rpm = speedSensor->readRpm();
+        readings.beltSpeed = speedSensor->readSpeed();
+        readings.pulseCount = speedSensor->pulseCount();
+        readings.rpmSource = speedSensor->source();
+    }
+
+    if (loadSensor) {
+        readings.load = loadSensor->readLoad();
+        readings.loadSource = loadSensor->source();
+    }
+
+    if (trackingSensor) {
+        readings.trackingPosition = trackingSensor->readTrackingDeviation();
+        readings.trackingSource = trackingSensor->source();
+    }
 
     return readings;
 }

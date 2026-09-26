@@ -26,42 +26,32 @@ ENV/
 *.manifest
 *.spec
 
-# Testing & Coverage
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-.hypothesis/
-
 # Environment Variables & Secrets
 .env
 .env.local
 .env.*.local
 *.pem
 *.key
+iot/firmware/esp32/src/secrets.h
 
-# Node & Frontend
+# Frontend / Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-.pnpm-store/
 dist/
 dist-ssr/
 *.local
 .vite/
 
-# Database & Storage
+# Database
 *.sqlite
 *.sqlite3
 *.db
 postgres_data/
 data/
 
-# IDE & OS
+# IDE / OS
 .idea/
 .vscode/
 *.swp
