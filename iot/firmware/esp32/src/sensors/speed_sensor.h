@@ -31,7 +31,6 @@ public:
     float readSpeed() override;
     uint32_t pulseCount() const override;
     const char* source() const override;
-    static IRPulseSpeedSensor* instance();
 
 private:
     static void IRAM_ATTR onPulseISR();
