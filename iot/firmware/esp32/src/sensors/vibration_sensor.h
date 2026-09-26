@@ -76,7 +76,7 @@ public:
         return SENSOR_SOURCE_SIMULATED;
     }
 
-private:
+public:
     static void computeFeatures(VibrationWindow& out) {
         if (out.count == 0) return;
 
