@@ -72,7 +72,7 @@ This project delivers an end-to-end, low-cost distributed monitoring and predict
 In iron ore mines, conveyor galleries extend for kilometers through underground tunnels, transfer towers, and remote overland terrain where internet and cellular connectivity is notoriously unreliable.
 
 - **Offline Buffering:** If the central server or WAN drops for minutes or hours, the Edge Gateway buffers every packet into an ACID-compliant local SQLite database (`storage/buffer.db`).
-- **Resilient Automatic Drain:** When connectivity is restored, a background forwarding worker automatically drains the queue to the central backend with zero packet loss.
+- **Resilient Automatic Drain:** When connectivity is restored, a background forwarding worker automatically drains the queue to the central backend, preventing loss of buffered packets across network dropouts.
 - **Sequence Deduplication:** Wireless edge transmissions often produce retries. Both the Edge Gateway and Central Backend enforce duplicate detection using `(node_id, sequence)`, returning HTTP 202 `duplicate` without polluting databases or charts.
 - **Edge Decoupling:** Sensor nodes only need to reach the local edge gateway over low-power WiFi/LAN, keeping battery usage minimal and firmware simple.
 
@@ -80,7 +80,7 @@ In iron ore mines, conveyor galleries extend for kilometers through underground 
 
 ## 5. Canonical Telemetry Contract (v1.0)
 
-Documented in detail in [`docs/telemetry-contract.md`](file:///home/anubhavtripathi/Documents/Projects/SIH26008/docs/telemetry-contract.md).
+Documented in detail in [`docs/telemetry-contract.md`](docs/telemetry-contract.md).
 
 ```json
 {

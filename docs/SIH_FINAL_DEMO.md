@@ -14,7 +14,7 @@
 
 2. **The 3-Tier Solution:**
    - **Edge Sensor Tier:** ESP32 microcontrollers sampling multi-axial vibration, bearing temperature, drive pulley tachometer/RPM, and lateral tracking.
-   - **Edge Gateway Tier:** Store-and-Forward persistent SQLite buffer guaranteeing zero packet loss during network dropouts in underground galleries.
+   - **Edge Gateway Tier:** Store-and-Forward persistent SQLite buffer preventing telemetry loss during network dropouts in underground galleries with monotonic deduplication.
    - **Multimodal Intelligence Tier:** Decoupled optical camera inspection running asynchronously alongside the **frozen IF-v0.3.1 machine learning vibration model**, v0.5 commissioning, and v0.6.1 persistence layer, synthesized by a transparent rule-based fusion engine into PostgreSQL and React.
 
 ---

@@ -229,9 +229,9 @@ export const SensorCards: React.FC<SensorCardsProps> = ({ telemetry }) => {
                           {status.label}
                         </span>
                         <span className={`rounded border px-1.5 py-0.2 text-[10px] font-mono font-bold uppercase ${
-                          cfg.id === 'tracking' || telemetry?.source === 'SIMULATED' ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-white/80 text-ink/75 border-ink/20'
+                          cfg.id === 'tracking' || telemetry?.source === 'SIMULATED' || telemetry?.source === 'DEMO_SIMULATED' || Boolean(telemetry?.is_simulated) ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-white/80 text-ink/75 border-ink/20'
                         }`}>
-                          {cfg.id === 'tracking' || telemetry?.source === 'SIMULATED' ? 'SIMULATED' : 'REAL'}
+                          {cfg.id === 'tracking' || telemetry?.source === 'SIMULATED' || telemetry?.source === 'DEMO_SIMULATED' || Boolean(telemetry?.is_simulated) ? 'SIMULATED' : 'REAL'}
                         </span>
                       </div>
                       <p className={cn('truncate font-mono text-xs sm:text-sm font-medium mt-0.5', cfg.captionColor)}>

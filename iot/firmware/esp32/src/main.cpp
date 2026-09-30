@@ -45,6 +45,11 @@ TelemetryCollector collector(
 
 PacketBuilder packetBuilder(NODE_ID, CONVEYOR_ID);
 
+#if MOTOR_CONTROL_ENABLED == 1
+#include "motor_driver.h"
+L298NMotorDriver conveyorMotor(MOTOR_ENA_PIN, MOTOR_IN1_PIN, MOTOR_IN2_PIN);
+#endif
+
 NetworkManager network(
     WIFI_SSID, WIFI_PASSWORD,
     GATEWAY_HOST, GATEWAY_PORT, GATEWAY_INGEST_PATH
@@ -72,6 +77,11 @@ void setup() {
     Serial.printf("[BOOT] Sensor initialization: %s\n",
                   sensorsOk ? "PASS" : "PARTIAL / CHECK SOURCES");
 
+#if MOTOR_CONTROL_ENABLED == 1
+    conveyorMotor.begin();
+    conveyorMotor.forward(MOTOR_DEFAULT_SPEED);
+#endif
+
     packetBuilder.begin();
     network.begin();
 
@@ -81,11 +91,9 @@ void setup() {
 void loop() {
     if (network.isProvisioning()) {
         network.handlePortal();
-        delay(10);
-        return;
+    } else {
+        network.maintainConnection();
     }
-
-    network.maintainConnection();
 
     const unsigned long now = millis();
     if (now - lastTelemetryMs < TELEMETRY_INTERVAL_MS) {
@@ -102,6 +110,9 @@ void loop() {
 
     const uint32_t sequence = packetBuilder.getCurrentSequence();
 
+    // Emit canonical JSON telemetry packet over Serial
+    Serial.println(packet);
+
     Serial.printf(
         "[SAMPLE #%lu] source=%s vib_rms=%.3f peak=%.3f kurt=%.2f "
         "temp=%.2f rpm=%.1f speed=%.2f load=%.1f track=%+.1f\n",
@@ -117,16 +128,18 @@ void loop() {
         readings.trackingPosition
     );
 
-    const int code = network.sendTelemetryToGateway(packet);
+    if (network.isConnected()) {
+        const int code = network.sendTelemetryToGateway(packet);
 
-    if (code == 202) {
-        Serial.printf("[STATUS] Sequence #%lu accepted by gateway.\n",
-                      static_cast<unsigned long>(sequence));
-    } else if (code == 200) {
-        Serial.printf("[STATUS] Sequence #%lu duplicate acknowledged.\n",
-                      static_cast<unsigned long>(sequence));
-    } else {
-        Serial.printf("[WARN] Uplink unavailable (HTTP=%d); sample retained in RAM only.\n",
-                      code);
+        if (code == 202) {
+            Serial.printf("[STATUS] Sequence #%lu accepted by gateway.\n",
+                          static_cast<unsigned long>(sequence));
+        } else if (code == 200) {
+            Serial.printf("[STATUS] Sequence #%lu duplicate acknowledged.\n",
+                          static_cast<unsigned long>(sequence));
+        } else {
+            Serial.printf("[WARN] Uplink unavailable (HTTP=%d); sample retained in RAM only.\n",
+                          code);
+        }
     }
 }

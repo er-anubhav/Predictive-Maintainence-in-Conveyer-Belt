@@ -25,33 +25,7 @@ echo "    SIH 26008 — INTELLIGENT CONVEYOR BELT MONITORING       "
 echo "           LIVE DEMO & HARDWARE RUNNER                     "
 echo "============================================================"
 
-# Determine System Mode
-if [ "$MODE" = "--demo" ]; then
-    SYSTEM_MODE="DEMO / SIMULATED"
-    START_SIMULATOR=true
-else
-    SYSTEM_MODE="REAL HARDWARE"
-    START_SIMULATOR=false
-fi
-
-# 1. Verify PostgreSQL
-echo -n "Checking PostgreSQL Database... "
-if pg_isready -h localhost -p 5434 -U sih_user -d sih_db >/dev/null 2>&1; then
-    DB_STATUS="ONLINE (localhost:5434)"
-    echo "✓ ONLINE"
-else
-    DB_STATUS="OFFLINE (Attempting start or mock)"
-    echo "⚠ Checking connection..."
-fi
-
-# 2. Check Camera Availability
-if [ -e "/dev/video0" ]; then
-    CAMERA_STATUS="ONLINE (/dev/video0)"
-else
-    CAMERA_STATUS="SYNTHETIC DEMO FALLBACK"
-fi
-
-# 3. Check ESP32 Serial Device
+# 1. Check ESP32 Serial Device first to accurately determine hardware availability
 ESP_PORT=""
 for port in /dev/ttyUSB0 /dev/ttyUSB1 /dev/ttyACM0 /dev/ttyACM1; do
     if [ -e "$port" ]; then
@@ -60,10 +34,36 @@ for port in /dev/ttyUSB0 /dev/ttyUSB1 /dev/ttyACM0 /dev/ttyACM1; do
     fi
 done
 
-if [ -n "$ESP_PORT" ]; then
+# Determine System Mode truthfully based on physical hardware attachment
+if [ "$MODE" = "--demo" ]; then
+    SYSTEM_MODE="DEMO / SIMULATED"
+    START_SIMULATOR=true
+    ESP32_STATUS="OFFLINE (Synthetic Simulator Active)"
+elif [ -n "$ESP_PORT" ]; then
+    SYSTEM_MODE="REAL HARDWARE"
+    START_SIMULATOR=false
     ESP32_STATUS="ONLINE (Physical on $ESP_PORT)"
 else
-    ESP32_STATUS="ONLINE (Telemetry Bridge Active)"
+    SYSTEM_MODE="DEMO / SIMULATED (ESP32 Not Plugged In)"
+    START_SIMULATOR=false
+    ESP32_STATUS="ONLINE (Telemetry Bridge Emulating Testbench)"
+fi
+
+# 2. Verify PostgreSQL
+echo -n "Checking PostgreSQL Database... "
+if pg_isready -h localhost -p 5434 >/dev/null 2>&1; then
+    DB_STATUS="ONLINE (localhost:5434)"
+    echo "✓ ONLINE"
+else
+    DB_STATUS="OFFLINE"
+    echo "⚠ Offline or unreachable on port 5434"
+fi
+
+# 2. Check Camera Availability
+if [ -e "/dev/video0" ]; then
+    CAMERA_STATUS="ONLINE (/dev/video0)"
+else
+    CAMERA_STATUS="SYNTHETIC DEMO FALLBACK"
 fi
 
 BACKEND_STATUS="ONLINE (http://localhost:8000)"

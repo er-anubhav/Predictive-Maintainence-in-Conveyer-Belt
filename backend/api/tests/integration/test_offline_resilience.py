@@ -175,11 +175,20 @@ def main():
     assert res.json()["status"] == "queued"
 
     # Allow forwarder to deliver
-    time.sleep(1.5)
-    telemetry_list = requests.get(f"{BACKEND_URL}/api/v1/telemetry/NODE-001?limit=10").json()
-    sequences = [t.get("sequence") for t in telemetry_list]
+    delivered = False
+    sequences = []
+    for _ in range(10):
+        time.sleep(0.5)
+        try:
+            telemetry_list = requests.get(f"{BACKEND_URL}/api/v1/telemetry/NODE-001?limit=10").json()
+            sequences = [t.get("sequence") for t in telemetry_list]
+            if test_seq_1 in sequences:
+                delivered = True
+                break
+        except Exception:
+            pass
     print(f"Backend sequences in PostgreSQL: {sequences[:5]}")
-    assert test_seq_1 in sequences, f"Expected sequence {test_seq_1} in backend telemetry!"
+    assert delivered, f"Expected sequence {test_seq_1} in backend telemetry!"
     print(f"[SUCCESS] Packet {test_seq_1} forwarded and stored in PostgreSQL.")
 
     # 2. Gateway Deduplication

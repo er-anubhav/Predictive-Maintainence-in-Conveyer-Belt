@@ -92,4 +92,5 @@ class ForwardingWorker:
             settings.MAX_RETRY_BACKOFF_SECONDS,
             1.0 * (2 ** min(self.consecutive_failures, 5)),
         )
-        self._stop_event.wait(timeout=backoff_seconds)
+        self._wake_event.wait(timeout=backoff_seconds)
+        self._wake_event.clear()

@@ -10,6 +10,7 @@ Integrates:
 import os
 import json
 import logging
+from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 import numpy as np
 import joblib
@@ -32,10 +33,11 @@ class VibrationInferenceEngine:
     def __init__(self, model_dir: Optional[str] = None):
         if model_dir is None:
             # Look in standard locations
+            repo_root = Path(__file__).resolve().parents[4]
             candidates = [
-                "/home/anubhavtripathi/Documents/Projects/SIH26008/models/iforest/v0.3.1",
-                os.path.join(os.path.dirname(__file__), "../../../models/iforest/v0.3.1"),
+                str(repo_root / "models" / "iforest" / "v0.3.1"),
                 os.path.abspath("models/iforest/v0.3.1"),
+                os.path.abspath("../../models/iforest/v0.3.1"),
             ]
             for c in candidates:
                 if os.path.exists(os.path.join(c, "model.joblib")):

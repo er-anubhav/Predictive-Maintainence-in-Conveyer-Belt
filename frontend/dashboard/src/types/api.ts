@@ -64,6 +64,7 @@ export interface Telemetry {
   camera_frame_ref?: string | null;
   camera_is_simulated?: boolean | null;
   source?: string | null;
+  is_simulated?: boolean | null;
 }
 
 export interface SensorEvidence {

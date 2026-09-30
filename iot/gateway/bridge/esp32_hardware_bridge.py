@@ -6,12 +6,9 @@ Provides a physical/virtual bridge for transmitting sensor telemetry packets fro
 connected hardware (or simulated hardware testbenches) through the Edge Gateway (port 9000)
 or directly to the FastAPI Backend (port 8000).
 
-Features:
-- Reads serial telemetry from USB ESP32 if plugged in (/dev/ttyUSB0, /dev/ttyACM0).
-- If serial ESP32 is absent, emulates canonical ESP32 firmware packets (PlatformIO/ArduinoJson 7).
-- Derives belt speed from RPM using configured pulley diameter (v = pi * D * RPM / 60).
-- Preserves monotonically increasing sequence counters for gateway deduplication.
-- Supports NORMAL baseline generation and controlled fault injection.
+Strict Semantics Enforced:
+- ACTUAL PHYSICAL ESP32 DATA: source = "REAL_HARDWARE", is_simulated = False
+- GENERATED / TESTBENCH DATA: source = "DEMO_SIMULATED", is_simulated = True
 """
 
 import os
@@ -52,7 +49,8 @@ def build_canonical_packet(
     node_id: str,
     conveyor_id: str,
     sequence: int,
-    source: str = "REAL_HARDWARE",
+    source: str = "DEMO_SIMULATED",
+    is_simulated: bool = True,
     scenario: str = "NORMAL",
 ) -> dict:
     now_iso = datetime.now(timezone.utc).isoformat()
@@ -113,6 +111,7 @@ def build_canonical_packet(
         "load": load,
         "tracking_position": track,
         "source": source,
+        "is_simulated": is_simulated,
     }
     return packet
 
@@ -124,18 +123,28 @@ def run_bridge(
     interval: float = 1.0,
     burst_count: int = 0,
     scenario: str = "NORMAL",
+    force_simulate: bool = False,
 ):
     print("=" * 65)
     print("SIH 26008 — ESP32 TELEMETRY BRIDGE ACTIVE")
     print("=" * 65)
-    serial_port = detect_serial_device()
+    serial_port = "" if force_simulate else detect_serial_device()
     is_physical = bool(serial_port and serial)
 
+    ser_conn = None
     if is_physical:
-        print(f"  [HARDWARE] Physical ESP32 detected on {serial_port}. Attaching serial listener...")
-    else:
-        print("  [BRIDGE] No serial micro-controller plugged in.")
-        print(f"  [BRIDGE] Running emulated ESP32 firmware bridge (Source: REAL_HARDWARE, Node: {node_id})")
+        try:
+            ser_conn = serial.Serial(serial_port, 115200, timeout=1.0)
+            print(f"  [HARDWARE] Physical ESP32 connected on {serial_port}.")
+            print("  [HARDWARE] Forwarding authentic telemetry (Source: REAL_HARDWARE, is_simulated: false)")
+        except Exception as e:
+            print(f"  [WARN] Failed to open {serial_port}: {e}. Falling back to emulated testbench.")
+            ser_conn = None
+            is_physical = False
+
+    if not is_physical:
+        print("  [BRIDGE] No active physical serial microcontroller detected.")
+        print(f"  [BRIDGE] Running emulated ESP32 testbench (Source: DEMO_SIMULATED, is_simulated: true, Node: {node_id})")
 
     print(f"  [TARGET]   Transmitting to: {target_url}")
     print(f"  [RATE]     Transmission interval: {interval}s")
@@ -148,22 +157,45 @@ def run_bridge(
     while True:
         seq += 1
         count += 1
+        packet = None
 
-        packet = build_canonical_packet(
-            node_id=node_id,
-            conveyor_id=conveyor_id,
-            sequence=seq,
-            source="REAL_HARDWARE",
-            scenario=scenario,
-        )
+        if ser_conn and ser_conn.is_open:
+            try:
+                line = ser_conn.readline().decode("utf-8", errors="ignore").strip()
+                if line.startswith("{") and line.endswith("}"):
+                    try:
+                        raw_data = json.loads(line)
+                        if "sequence" in raw_data or "node_id" in raw_data:
+                            packet = raw_data
+                            packet["source"] = "REAL_HARDWARE"
+                            packet["is_simulated"] = False
+                    except json.JSONDecodeError:
+                        pass
+            except Exception as e:
+                print(f"  [WARN] Serial read error: {e}")
+
+        # If not received from physical serial, generate canonical testbench packet
+        if not packet:
+            source_label = "DEMO_SIMULATED"
+            is_sim = True
+            packet = build_canonical_packet(
+                node_id=node_id,
+                conveyor_id=conveyor_id,
+                sequence=seq,
+                source=source_label,
+                is_simulated=is_sim,
+                scenario=scenario,
+            )
 
         try:
             resp = requests.post(target_url, json=packet, timeout=3.0)
             status_code = resp.status_code
             status_txt = "QUEUED/SENT" if status_code in (200, 201, 202) else f"HTTP {status_code}"
+            src_tag = packet.get("source", "UNKNOWN")
+            sim_tag = "SIM" if packet.get("is_simulated") else "PHYSICAL"
             print(
-                f"[{datetime.now().strftime('%H:%M:%S')}] Packet #{seq} -> {status_txt} "
-                f"| Vib RMS: {packet['vibration']['rms']:.2f}g | Temp: {packet['temperature']:.1f}°C | Speed: {packet['belt_speed']:.2f}m/s ({packet['rpm']:.0f} RPM)"
+                f"[{datetime.now().strftime('%H:%M:%S')}] Packet #{packet.get('sequence', seq)} [{src_tag}:{sim_tag}] -> {status_txt} "
+                f"| Vib RMS: {packet.get('vibration', {}).get('rms', 0.0):.2f}g | Temp: {packet.get('temperature', 0.0):.1f}°C | Speed: {packet.get('belt_speed', 0.0):.2f}m/s"
             )
         except requests.exceptions.RequestException as e:
             print(f"[{datetime.now().strftime('%H:%M:%S')}] Packet #{seq} -> Transmission Error: {e}")
@@ -183,6 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--interval", type=float, default=1.5, help="Transmission interval in seconds")
     parser.add_argument("--count", type=int, default=0, help="Number of packets to send (0 = infinite)")
     parser.add_argument("--scenario", default="NORMAL", help="NORMAL | BEARING_FAULT | THERMAL_FAULT | MISALIGNMENT")
+    parser.add_argument("--simulate", action="store_true", help="Force synthetic testbench simulation even if serial connected")
     args = parser.parse_args()
 
     run_bridge(
@@ -192,4 +225,5 @@ if __name__ == "__main__":
         interval=args.interval,
         burst_count=args.count,
         scenario=args.scenario,
+        force_simulate=args.simulate,
     )

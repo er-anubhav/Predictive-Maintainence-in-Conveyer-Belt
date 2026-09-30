@@ -110,7 +110,7 @@ export const ArchitectureModal: React.FC<ArchitectureModalProps> = ({ isOpen, on
                 <span>Tier 2: Edge Gateway (:9000)</span>
               </div>
               <p className="text-sm sm:text-base text-ink leading-snug font-medium">
-                Local SQLite persistent buffer queue. Guarantees <strong>zero data loss</strong> during network dropouts with automated exponential retry.
+                Local SQLite persistent buffer queue. Provides <strong>durable offline buffering</strong> during network dropouts with automated exponential retry.
               </p>
             </div>
 

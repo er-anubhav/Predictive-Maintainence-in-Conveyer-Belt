@@ -24,12 +24,13 @@ def load_poc_thresholds(config_path: str = DEFAULT_CONFIG_PATH) -> Dict[str, Any
         return _CACHED_CONFIG
 
     if not os.path.exists(config_path):
-        # Fallback candidates
+        from pathlib import Path
+        repo_root = Path(__file__).resolve().parents[4]
         candidates = [
+            str(repo_root / "config" / "poc_thresholds.yaml"),
             os.path.abspath("config/poc_thresholds.yaml"),
             os.path.abspath("../../config/poc_thresholds.yaml"),
             os.path.abspath("../config/poc_thresholds.yaml"),
-            "/home/anubhavtripathi/Documents/Projects/SIH26008/config/poc_thresholds.yaml",
         ]
         for c in candidates:
             if os.path.exists(c):

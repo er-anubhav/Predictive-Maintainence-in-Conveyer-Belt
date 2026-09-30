@@ -48,7 +48,8 @@ class TelemetryCreate(BaseModel):
     pulse_count: Optional[int] = Field(default=None, description="Raw tachometer/encoder pulse counter")
     load: Optional[float] = Field(default=0.0, description="Belt load percentage (0-100%)")
     tracking_position: Optional[float] = Field(default=0.0, description="Lateral belt tracking deviation in mm")
-    source: Optional[str] = Field(default="REAL_HARDWARE", description="REAL_HARDWARE | SIMULATED | TEST_FIXTURE")
+    source: Optional[str] = Field(default=None, description="REAL_HARDWARE | DEMO_SIMULATED | SIMULATED | TEST_FIXTURE")
+    is_simulated: Optional[bool] = Field(default=None, description="True if simulated, False if physical hardware")
 
     # Optional raw vibration samples for on-the-fly edge inference
     raw_samples: Optional[List[float]] = Field(default=None, description="Raw vibration samples if transmitting time series")
@@ -128,6 +129,7 @@ class TelemetryResponse(BaseModel):
     load: float
     tracking_position: float
     source: Optional[str] = "REAL_HARDWARE"
+    is_simulated: Optional[bool] = False
 
     # ML Inference & Evidence Fields (IF-v0.3.1 + v0.5 + v0.6.1)
     model_version: Optional[str] = "IF-v0.3.1"

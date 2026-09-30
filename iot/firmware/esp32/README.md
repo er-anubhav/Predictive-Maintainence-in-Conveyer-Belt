@@ -24,8 +24,18 @@ The project deliberately reports per-sensor source labels as `REAL_HARDWARE`, `S
 - Tracking digital input: GPIO 27
 - ADXL345 default address: `0x53`
 - MLX90614 default address: `0x5A`
+- **L298N Motor Driver Control (12V DC Geared Conveyor Motor)**:
+  - ENA (PWM Speed): GPIO 25 (ESP32 LEDC channel 0, 5 kHz)
+  - IN1 (Direction 1): GPIO 26
+  - IN2 (Direction 2): GPIO 33
+  - **Electrical Safety & Isolation**:
+    - 12V PSU (+) -> L298N 12V VCC terminal.
+    - 12V PSU (-) -> L298N GND terminal.
+    - ESP32 GND -> L298N GND terminal (Common ground reference for logic thresholds).
+    - ESP32 logic is 3.3V. L298N TTL inputs accept 3.3V logic high (>2.3V).
+    - **ESP32 must NEVER connect directly to 12V supply**.
 
-Verify the actual sensor wiring, electrical levels, calibration and mechanical mounting before field deployment.
+Verify the actual sensor and motor driver wiring, electrical levels, calibration and mechanical mounting before field deployment.
 
 ## Telemetry path
 

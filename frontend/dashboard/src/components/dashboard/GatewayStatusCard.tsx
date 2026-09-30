@@ -145,7 +145,7 @@ export const GatewayStatusCard: React.FC<GatewayStatusCardProps> = ({
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
           <span>
-            <strong>Zero Data Loss Guarantee:</strong> Ingested packets are durably committed to SQLite before HTTP 202 is acknowledged.
+            <strong>Resilient Offline Buffering:</strong> Ingested packets are durably committed to SQLite before HTTP 202 is acknowledged.
           </span>
         </div>
         <div className="text-[10px] text-ink/60">

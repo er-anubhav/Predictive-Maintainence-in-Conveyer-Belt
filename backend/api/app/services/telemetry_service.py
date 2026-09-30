@@ -139,8 +139,14 @@ class TelemetryService:
             is_simulated=False,
         )
 
-        vibration_evidence.source = payload.source or "REAL_HARDWARE"
-        vibration_evidence.is_simulated = (payload.source == "SIMULATED")
+        is_sim = (
+            payload.is_simulated is True
+            or payload.source in ("SIMULATED", "DEMO_SIMULATED")
+        )
+        source_str = "DEMO_SIMULATED" if is_sim else (payload.source or "REAL_HARDWARE")
+
+        vibration_evidence.source = source_str
+        vibration_evidence.is_simulated = is_sim
 
         # 2. Operating Context
         context_engine = OperatingContextEngine.get_instance()
@@ -152,8 +158,8 @@ class TelemetryService:
             timestamp=payload.timestamp,
             conveyor_id=conveyor_id_str,
         )
-        context_evidence.source = payload.source or "REAL_HARDWARE"
-        context_evidence.is_simulated = (payload.source == "SIMULATED")
+        context_evidence.source = source_str
+        context_evidence.is_simulated = is_sim
 
         # 3. Thermal Intelligence
         thermal_engine = ThermalIntelligence.get_instance()
@@ -163,8 +169,8 @@ class TelemetryService:
             timestamp=payload.timestamp,
             conveyor_id=conveyor_id_str,
         )
-        thermal_evidence.source = payload.source or "REAL_HARDWARE"
-        thermal_evidence.is_simulated = (payload.source == "SIMULATED")
+        thermal_evidence.source = source_str
+        thermal_evidence.is_simulated = is_sim
 
         # 4. Tracking Intelligence (Simulated when no physical hardware attached)
         tracking_engine = TrackingIntelligence.get_instance()
@@ -174,7 +180,7 @@ class TelemetryService:
             timestamp=payload.timestamp,
             conveyor_id=conveyor_id_str,
         )
-        tracking_evidence.source = "SIMULATED" if payload.source == "SIMULATED" else "SIMULATED" # Documented: physical tracking sensor not physically installed on test bench
+        tracking_evidence.source = "DEMO_SIMULATED" if is_sim else "SIMULATED"
         tracking_evidence.is_simulated = True
 
         # 5. Decoupled Camera Evidence Lookup (does NOT execute synchronous camera capture)
@@ -206,7 +212,7 @@ class TelemetryService:
             camera=camera_health,
         )
         unified_event.hardware_health = hw_health
-        unified_event.system_mode = "DEMO_SIMULATED" if payload.source == "SIMULATED" else "REAL_HARDWARE"
+        unified_event.system_mode = "DEMO_SIMULATED" if is_sim else "REAL_HARDWARE"
 
         telemetry = Telemetry(
             sensor_node_id=node.id,
@@ -273,6 +279,8 @@ class TelemetryService:
             camera_status=telemetry.camera_status,
             camera_frame_ref=telemetry.camera_frame_ref,
             camera_is_simulated=telemetry.camera_is_simulated,
+            source=source_str,
+            is_simulated=is_sim,
         )
 
     @classmethod

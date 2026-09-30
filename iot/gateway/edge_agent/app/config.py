@@ -28,7 +28,7 @@ class GatewaySettings(BaseSettings):
     # Worker configuration
     POLL_INTERVAL_SECONDS: float = 1.0
     BATCH_SIZE: int = 20
-    MAX_RETRY_BACKOFF_SECONDS: float = 30.0
+    MAX_RETRY_BACKOFF_SECONDS: float = 5.0
 
 
 settings = GatewaySettings()

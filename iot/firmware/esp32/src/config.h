@@ -90,6 +90,14 @@
 #define SENSOR_SOURCE_SIMULATED "SIMULATED"
 #define SENSOR_SOURCE_UNAVAILABLE "UNAVAILABLE"
 
+// L298N Motor Driver Control (12V DC Geared Conveyor Motor)
+// ESP32 3.3V GPIOs -> L298N TTL Inputs. ESP32 is strictly protected from 12V supply.
+#define MOTOR_CONTROL_ENABLED 1
+#define MOTOR_ENA_PIN 25  // PWM speed control (LEDC channel 0)
+#define MOTOR_IN1_PIN 26  // Direction control 1
+#define MOTOR_IN2_PIN 33  // Direction control 2
+#define MOTOR_DEFAULT_SPEED 200 // 0-255 PWM duty cycle
+
 // NVS-reserved sequence blocks avoid reuse after ESP32 reboot.
 #define SEQUENCE_NAMESPACE "sih26008"
 #define SEQUENCE_BLOCK_SIZE 1000
