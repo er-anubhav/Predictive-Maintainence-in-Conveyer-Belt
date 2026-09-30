@@ -4,6 +4,13 @@
 
 ---
 
+### 📄 Official Documentation & Submission Deliverables
+- **Project Report (PDF):** [`SIH_2026_PS26008_Project_Report.pdf`](./SIH_2026_PS26008_Project_Report.pdf) | [View on GitHub](https://github.com/er-anubhav/Predictive-Maintainence-in-Conveyer-Belt/blob/main/SIH_2026_PS26008_Project_Report.pdf) | [Direct Download](https://raw.githubusercontent.com/er-anubhav/Predictive-Maintainence-in-Conveyer-Belt/main/SIH_2026_PS26008_Project_Report.pdf)
+- **Live Industrial Web Dashboard:** [https://dashboard-kohl-two-oxi81nc85z.vercel.app](https://dashboard-kohl-two-oxi81nc85z.vercel.app)
+- **GitHub Repository:** [https://github.com/er-anubhav/Predictive-Maintainence-in-Conveyer-Belt](https://github.com/er-anubhav/Predictive-Maintainence-in-Conveyer-Belt)
+
+---
+
 ## 1. Project Overview
 
 In harsh industrial environments like iron ore mining, conveyor belts are mission-critical bulk material handling assets. Unexpected conveyor belt tears, joint/splice failures, idler roller seizures, and tracking misalignments result in catastrophic operational downtime, safety hazards, and multimillion-rupee production losses.
