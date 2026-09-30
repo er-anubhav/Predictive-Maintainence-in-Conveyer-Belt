@@ -204,7 +204,7 @@ class TelemetryService:
         camera_health = camera_store.get_health_status()
         from app.schemas.evidence import HardwareHealthStatus
         hw_health = HardwareHealthStatus(
-            esp32="ONLINE",
+            esp32="ONLINE" if (not is_sim and payload.source == "REAL_HARDWARE") else "OFFLINE",
             vibration=vibration_evidence.quality,
             temperature=thermal_evidence.quality,
             rpm="GOOD" if payload.rpm is not None or payload.belt_speed is not None else "DEGRADED",

@@ -156,7 +156,7 @@ export const MultimodalMonitorCard: React.FC<MultimodalMonitorCardProps> = ({
           <span className={`px-3 py-1 rounded-md border-2 border-ink font-mono font-black ${
             multimodalEvent?.hardware_health?.esp32 === 'ONLINE' ? 'bg-emerald-200 text-emerald-950' : 'bg-rose-200 text-rose-950'
           }`}>
-            ESP32: {multimodalEvent?.hardware_health?.esp32 || 'ONLINE'}
+            ESP32: {multimodalEvent?.hardware_health?.esp32 === 'ONLINE' ? 'CONNECTED' : 'NOT CONNECTED'}
           </span>
           <span className={`px-3 py-1 rounded-md border-2 border-ink font-mono font-black ${
             multimodalEvent?.hardware_health?.vibration === 'GOOD' ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'

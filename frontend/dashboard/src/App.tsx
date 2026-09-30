@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api, getApiBase, setApiBase } from './services/api';
+import { api } from './services/api';
 import { Conveyor, ConveyorDetail, SensorNode, Telemetry } from './types/api';
 import { SiteNav, NavTab } from './components/layout/SiteNav';
 import { ExecutiveHealthBanner } from './components/dashboard/ExecutiveHealthBanner';
@@ -10,7 +10,7 @@ import { TelemetryCharts } from './components/dashboard/TelemetryCharts';
 import { TelemetryTable } from './components/dashboard/TelemetryTable';
 import { ConveyorsView } from './components/views/ConveyorsView';
 import { MultimodalMonitorCard } from './components/dashboard/MultimodalMonitorCard';
-import { AlertTriangle, RefreshCw, Radio, ChevronUp, ChevronDown, Settings } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Radio, ChevronUp, ChevronDown } from 'lucide-react';
 import { UnifiedConveyorEvent } from './types/api';
 
 export function App() {
@@ -32,11 +32,8 @@ export function App() {
 
   // Connectivity & Polling Controls
   const [apiConnected, setApiConnected] = useState<boolean>(true);
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [showOverviewChart, setShowOverviewChart] = useState<boolean>(false);
-  const [showApiSettings, setShowApiSettings] = useState<boolean>(false);
-  const [customApiUrl, setCustomApiUrl] = useState<string>(getApiBase());
 
   // 1. Initial Load: Mines, Conveyors, and Sensor Nodes
   const loadInitialData = useCallback(async () => {
@@ -44,14 +41,12 @@ export function App() {
       setIsRefreshing(true);
 
       // Verify health
-      const health = await api.getHealth();
-      const isDemo = health.status === 'demo_mode' || health.environment === 'demo_simulation';
-      setIsDemoMode(isDemo);
-      setApiConnected(!isDemo);
+      await api.getHealth();
+      setApiConnected(true);
 
       const [conveyorsData, devicesData] = await Promise.all([
-        api.getConveyors(),
-        api.getDevices(),
+        api.getConveyors().catch(() => [] as Conveyor[]),
+        api.getDevices().catch(() => [] as SensorNode[]),
       ]);
 
       setConveyors(conveyorsData);
@@ -65,8 +60,7 @@ export function App() {
         setSelectedNodeCode(devicesData[0].node_code);
       }
     } catch (err: any) {
-      console.error('Initial data loading failed:', err);
-      setIsDemoMode(true);
+      console.warn('Initial data loading failed:', err);
       setApiConnected(false);
     } finally {
       setIsRefreshing(false);
@@ -177,80 +171,57 @@ export function App() {
           onScenarioTriggered={fetchTelemetry}
         />
 
-        {/* Cloud Preview / Backend Connectivity Banner */}
-        {isDemoMode && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border-2 border-ink bg-amber-400 p-4 hard-shadow text-ink font-mono text-xs sm:text-sm">
+        {/* Hardware / Backend Offline Banner */}
+        {!apiConnected && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border-2 border-ink bg-coral p-4 hard-shadow text-cream font-mono text-xs sm:text-sm">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="size-5 shrink-0 stroke-[2.5]" />
+              <AlertTriangle className="size-6 shrink-0 stroke-[2.5]" />
               <div>
-                <span className="font-black uppercase tracking-wider block sm:inline mr-2">Cloud Preview Mode:</span>
-                <span>FastAPI backend not detected on current host. Running interactive demo testbench with realistic mining telemetry.</span>
-                <span className="block text-[11px] opacity-80 mt-0.5">
-                  To connect live physical hardware & local ML inference, run <code className="font-bold bg-white/60 px-1 py-0.5 rounded">./run_demo.sh</code> and open <code className="font-bold bg-white/60 px-1 py-0.5 rounded">http://localhost:5173</code>
-                </span>
+                <div className="font-black text-sm uppercase tracking-wider">NO ESP32 CONNECTED · BACKEND OFFLINE</div>
+                <div className="text-xs text-cream/90 mt-0.5">
+                  Microcontroller serial uplink is disconnected. Run <code className="bg-black/30 px-1.5 py-0.5 rounded font-bold">./run_demo.sh</code> and open <code className="bg-black/30 px-1.5 py-0.5 rounded font-bold">http://localhost:5173</code> to stream live data.
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-              <button
-                onClick={() => setShowApiSettings(!showApiSettings)}
-                className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-cream px-3 py-1 font-mono text-xs font-black uppercase text-ink hard-shadow-xs transition-transform hover:-translate-y-0.5 cursor-pointer"
-              >
-                <Settings className="size-3.5 stroke-[2.5]" />
-                <span>API URL</span>
-              </button>
-              <button
-                onClick={handleManualRefresh}
-                className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-cream px-3 py-1 font-mono text-xs font-black uppercase text-ink hard-shadow-xs transition-transform hover:-translate-y-0.5 cursor-pointer"
-              >
-                <RefreshCw className={`size-3.5 stroke-[2.5] ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span>Retry</span>
-              </button>
-            </div>
+            <button
+              onClick={handleManualRefresh}
+              className="inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-ink bg-cream px-4 py-2 font-mono text-xs font-black uppercase text-ink hard-shadow-xs transition-transform hover:-translate-y-0.5 cursor-pointer self-start sm:self-auto shrink-0"
+            >
+              <RefreshCw className={`size-3.5 stroke-[2.5] ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Retry</span>
+            </button>
           </div>
         )}
 
-        {/* Custom API URL Configuration Modal */}
-        {showApiSettings && (
-          <div className="rounded-2xl border-2 border-ink bg-cream p-4 hard-shadow space-y-3 font-mono text-xs">
-            <div className="font-bold uppercase tracking-wider text-ink flex items-center gap-2">
-              <Settings className="size-4 stroke-[2.5]" />
-              <span>Custom Backend API Configuration</span>
-            </div>
-            <p className="text-muted">
-              Enter a custom FastAPI backend URL (e.g., ngrok tunnel or public server IP) to connect this cloud dashboard to your live model & hardware:
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                value={customApiUrl}
-                onChange={(e) => setCustomApiUrl(e.target.value)}
-                placeholder="https://your-ngrok-or-backend-url.app"
-                className="flex-1 rounded-xl border-2 border-ink bg-white px-3 py-2 text-ink font-mono text-xs focus:outline-none"
-              />
-              <button
-                onClick={() => {
-                  setApiBase(customApiUrl);
-                  setShowApiSettings(false);
-                  handleManualRefresh();
-                }}
-                className="rounded-xl border-2 border-ink bg-lime px-4 py-2 font-bold uppercase text-ink hard-shadow-xs hover:-translate-y-0.5 cursor-pointer"
-              >
-                Save & Connect
-              </button>
-              {customApiUrl && (
-                <button
-                  onClick={() => {
-                    setCustomApiUrl('');
-                    setApiBase('');
-                    setShowApiSettings(false);
-                    handleManualRefresh();
-                  }}
-                  className="rounded-xl border-2 border-ink bg-coral text-cream px-3 py-2 font-bold uppercase hard-shadow-xs hover:-translate-y-0.5 cursor-pointer"
-                >
-                  Reset
-                </button>
+        {/* Real Hardware vs Simulation Status Indicator */}
+        {apiConnected && (
+          <div className="flex items-center justify-between gap-3 rounded-2xl border-2 border-ink bg-cream p-3.5 px-5 hard-shadow text-ink font-mono text-xs">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="font-black uppercase tracking-wider text-ink/70">Hardware Uplink:</span>
+              {latestTelemetry?.source === 'REAL_HARDWARE' && !latestTelemetry?.is_simulated ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-lime px-3 py-0.5 font-bold text-ink hard-shadow-xs">
+                  <span className="size-2 rounded-full bg-emerald-600 animate-pulse" />
+                  REAL ESP32 HARDWARE CONNECTED
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-rose-200 px-3 py-0.5 font-bold text-rose-950 hard-shadow-xs">
+                  <span className="size-2 rounded-full bg-rose-600" />
+                  NO ESP32 CONNECTED (OFFLINE / SIMULATED)
+                </span>
               )}
+              <span className="text-ink/60">
+                {latestTelemetry?.source === 'REAL_HARDWARE' && !latestTelemetry?.is_simulated
+                  ? 'Receiving physical serial packets from microcontroller'
+                  : 'No active USB serial telemetry detected on port /dev/ttyUSB*'}
+              </span>
             </div>
+            <button
+              onClick={handleManualRefresh}
+              className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-white px-3 py-1 font-mono text-xs font-bold uppercase text-ink hard-shadow-xs hover:-translate-y-0.5 cursor-pointer shrink-0"
+            >
+              <RefreshCw className={`size-3 stroke-[2.5] ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
           </div>
         )}
 
